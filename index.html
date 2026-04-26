@@ -724,15 +724,15 @@ function parseCSV(text) {
       else { cell += char; }
     }
     row.push(cell.trim());
-    if (row[0] && row[1]) {
+    if (row[0] && row[2]) {
       data.push({
         en:        row[0],
-        bn:        row[1],
-        pron:      row[2] || '',
-        ex_en:     row[3] || '',
+        pron:      row[1] || '',
+        bn:        row[2],
+        family:    row[3] || '',
         cat:       row[4] || 'Misc',
-        ex_bn:     row[5] || '',
-        family:    row[6] || '',
+        ex_en:     row[5] || '',
+        ex_bn:     row[6] || '',
         important: parseInt(row[7]) || 0
       });
     }
@@ -813,7 +813,7 @@ function renderBrowse(scroll = true) {
   const sort   = document.getElementById('f-sort').value;
 
   let filtered = vocab.filter(v => {
-    const ms = v.en.toLowerCase().includes(query) || v.bn.includes(query) || v.pron.toLowerCase().includes(query);
+    const ms = v.en.toLowerCase().includes(query) || v.bn.includes(query) || v.pron.toLowerCase().includes(query) || v.family.toLowerCase().includes(query);
     const mc = !cat  || v.cat === cat;
     const mst = !stat
       || (stat === 'new' && !progress[v.en])
@@ -929,12 +929,15 @@ function renderFC() {
       <p class="fc-hint">Tap to reveal meaning</p>`;
     if (document.getElementById('fc-auto-speak').checked) speak(v.en);
   } else {
+    const famWords = v.family ? v.family.split(',').map(f => `<span style="background:var(--accent-soft);color:var(--accent);padding:2px 10px;border-radius:99px;font-size:0.8rem;font-weight:700;">${f.trim()}</span>`).join('') : '';
     card.innerHTML = `
       <div class="fc-bn-text">${v.bn}</div>
-      ${(v.ex_en || v.ex_bn) ? `
+      ${v.pron ? `<div style="font-family:monospace;font-size:0.9rem;color:var(--text-sub);font-weight:700;margin-top:6px;">/${v.pron}/</div>` : ''}
+      ${(v.ex_en || v.ex_bn || v.family) ? `
       <div class="fc-detail-box">
         ${v.ex_en ? `<p class="fc-ex-en-small">${v.ex_en}</p>` : ''}
         ${v.ex_bn ? `<span class="fc-ex-bn-small">${v.ex_bn}</span>` : ''}
+        ${famWords ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;">${famWords}</div>` : ''}
       </div>` : ''}
       <p class="fc-hint">Tap to flip back</p>`;
   }
