@@ -704,6 +704,139 @@ html.dark .skeleton-card::after{
 .hidden{display:none!important;}
 section{animation:fadeUp .22s ease both;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ═══════════════════════════════════════════════
+   ANNOUNCEMENT POPUP
+═══════════════════════════════════════════════ */
+.ann-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1300;
+  display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+@media(min-width:560px){.ann-overlay{align-items:center;}}
+.ann-overlay.open{opacity:1;pointer-events:auto;}
+.ann-box{
+  background:var(--card-bg);
+  border-radius:var(--radius-xl) var(--radius-xl) 0 0;
+  width:100%;max-width:480px;max-height:85vh;overflow-y:auto;
+  padding:2rem 1.5rem 1.5rem;position:relative;
+  box-shadow:0 -8px 40px rgba(0,0,0,.3);
+  transform:translateY(40px);transition:transform .32s cubic-bezier(.34,1.4,.64,1);
+}
+@media(min-width:560px){
+  .ann-box{border-radius:var(--radius-xl);box-shadow:0 24px 60px rgba(0,0,0,.35);transform:translateY(30px);}
+}
+.ann-overlay.open .ann-box{transform:translateY(0);}
+.ann-box::before{
+  content:'';position:absolute;top:.75rem;left:50%;transform:translateX(-50%);
+  width:38px;height:4px;background:var(--border);border-radius:99px;
+}
+@media(min-width:560px){.ann-box::before{display:none;}}
+.ann-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--accent-soft);color:var(--accent);
+  font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;
+  padding:4px 12px;border-radius:99px;margin-bottom:.9rem;
+}
+.ann-title{font-size:1.5rem;font-weight:800;letter-spacing:-.025em;margin-bottom:.7rem;line-height:1.2;}
+.ann-msg{font-size:.95rem;line-height:1.7;color:var(--text-sub);white-space:pre-wrap;}
+.ann-close-btn{
+  width:100%;margin-top:1.4rem;padding:.85rem;border-radius:var(--radius-md);
+  background:var(--accent);color:#fff;border:none;font-size:.95rem;font-weight:800;
+  cursor:pointer;font-family:inherit;transition:filter .15s;letter-spacing:.02em;
+}
+.ann-close-btn:hover{filter:brightness(1.1);}
+.ann-close-btn:active{transform:scale(.98);}
+.ann-dismiss-row{text-align:center;margin-top:.75rem;}
+.ann-dismiss-link{
+  font-size:.76rem;color:var(--text-sub);cursor:pointer;text-decoration:underline;
+  background:none;border:none;font-family:inherit;
+}
+
+/* ═══════════════════════════════════════════════
+   MOBILE-FIRST FLASH / STUDY / QUIZ / SPELL
+═══════════════════════════════════════════════ */
+
+/* -- Shared mode wrapper -- */
+.mode-shell{
+  display:flex;flex-direction:column;gap:.85rem;
+  padding-bottom:.5rem;
+}
+
+/* -- Controls bar: compact pill layout on mobile -- */
+.mode-controls{
+  background:var(--card-bg);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:.7rem;
+  display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;
+  justify-content:center;box-shadow:var(--shadow);
+}
+.mode-controls select,.mode-controls .btn{
+  flex:1;min-width:130px;max-width:200px;
+}
+@media(max-width:480px){
+  .mode-controls select,.mode-controls .btn{
+    flex:1 1 calc(50% - .25rem);min-width:0;max-width:none;font-size:.8rem;
+  }
+  .mode-controls .btn-primary{flex:1 1 100%;max-width:none;}
+  .mode-controls label{flex:1 1 100%;justify-content:center;font-size:.8rem;}
+}
+
+/* -- Flashcard full-height on mobile -- */
+.fc-shell{display:flex;flex-direction:column;width:100%;max-width:480px;margin:0 auto;}
+.flip-card{
+  height:clamp(260px, 52vw, 420px);
+  min-height:unset;max-height:unset;
+}
+@media(max-width:480px){
+  .flip-card{height:clamp(240px,56vw,320px);}
+  .fc-en-text{font-size:clamp(1.6rem,10vw,2.5rem);}
+  .fc-bn-text{font-size:clamp(1.2rem,7vw,1.9rem);}
+  .fc-nav{gap:.5rem;}
+  .fc-nav-btn{height:2.7rem;font-size:.8rem;letter-spacing:.02em;}
+  .fc-rate-row{gap:.4rem;}
+  .fc-rate-btn{height:2.5rem;font-size:.75rem;max-width:none;flex:1;}
+}
+
+/* Swipe hint strip */
+.swipe-hint{
+  text-align:center;font-size:.68rem;color:var(--text-sub);font-weight:600;
+  opacity:.6;letter-spacing:.04em;margin-top:-.2rem;
+}
+
+/* -- Quiz mobile -- */
+@media(max-width:540px){
+  .quiz-card{padding:1.1rem;}
+  .quiz-word{font-size:clamp(1.25rem,7vw,1.8rem);}
+  .q-opt{padding:.8rem .85rem;font-size:1rem;margin-top:.55rem;}
+  .q-opt.en-opt{font-size:.88rem;}
+  .quiz-header{gap:.3rem;}
+  .quiz-qnum,.quiz-score-b,.quiz-timer{font-size:.72rem;padding:3px 9px;}
+}
+
+/* -- Study card mobile -- */
+@media(max-width:540px){
+  .study-front{padding:1.4rem 1rem;}
+  .study-back{padding:1rem;}
+  .study-word{font-size:clamp(1.7rem,10vw,2.6rem);}
+  .study-rate-btn{min-width:80px;font-size:.76rem;padding:.55rem .4rem;}
+}
+
+/* -- Spelling test mobile -- */
+@media(max-width:480px){
+  .spell-card{padding:1.1rem .9rem;}
+  .spell-clue{font-size:1.4rem;}
+  .letter-box{width:clamp(1.5rem,8.5vw,2rem);height:clamp(1.9rem,10vw,2.4rem);font-size:clamp(.75rem,4vw,.95rem);}
+  .spell-input{font-size:1.1rem;padding:.6rem;}
+  .spell-score-row{gap:1rem;}
+}
+
+/* Score screen shared improvements */
+.quiz-score-screen{padding:2rem 1.2rem;}
+@media(max-width:480px){
+  .quiz-score-screen h1{font-size:2.8rem;}
+  .quiz-score-screen h2{font-size:1.2rem;}
+}
+
 </style>
 </head>
 <body>
@@ -713,6 +846,20 @@ section{animation:fadeUp .22s ease both;}
 
 <!-- Header show tab -->
 <div id="header-show-tab" onclick="toggleHeaderManual(false)" role="button" tabindex="0" aria-label="Show header">▽ Show Header</div>
+
+
+<!-- ── ANNOUNCEMENT POPUP ── -->
+<div class="ann-overlay" id="ann-overlay" onclick="closeAnnIfBg(event)" role="dialog" aria-modal="true" aria-labelledby="ann-title-el">
+  <div class="ann-box" id="ann-box">
+    <div class="ann-badge" id="ann-badge">📢 Notice</div>
+    <div class="ann-title" id="ann-title-el"></div>
+    <div class="ann-msg" id="ann-msg-el"></div>
+    <button class="ann-close-btn" onclick="closeAnn()">Got it, let's study! 📚</button>
+    <div class="ann-dismiss-row">
+      <button class="ann-dismiss-link" onclick="dismissAnn()">Don't show again today</button>
+    </div>
+  </div>
+</div>
 
 <!-- ── WORD DETAIL MODAL ── -->
 <div class="modal-overlay" id="word-modal" onclick="closeModal(event)" role="dialog" aria-modal="true" aria-label="Word details">
@@ -835,7 +982,7 @@ section{animation:fadeUp .22s ease both;}
       <input type="checkbox" id="fc-auto-speak"> Auto Speak
     </label>
   </div>
-  <div class="fc-wrap">
+  <div class="fc-shell fc-wrap">
     <div class="fc-meta">
       <span class="fc-counter" id="fc-counter-text">0 / 0</span>
       <span id="fc-cat-label" style="font-size:.76rem;font-weight:700;color:var(--text-sub)"></span>
@@ -849,6 +996,7 @@ section{animation:fadeUp .22s ease both;}
       <button class="fc-rate-btn hard" onclick="fcRate('hard')">😓 Hard</button>
       <button class="fc-rate-btn skip" onclick="fcRate('skip')">⏭ Skip</button>
     </div>
+    <div class="swipe-hint">← swipe or use arrow keys →</div>
     <div class="fc-nav">
       <button class="btn btn-outline fc-nav-btn" onclick="fcPrev()">← PREV</button>
       <button class="btn btn-outline fc-nav-btn" onclick="fcNext()">NEXT →</button>
@@ -1205,7 +1353,9 @@ function parseCSV(text){
         cat: row[4] || 'Misc',
         ex_en: row[5] || '',
         ex_bn: row[6] || '',
-        important: parseInt(row[7]) || 0
+        important: parseInt(row[7]) || 0,
+        popup_title: row[8] || '',
+        popup_msg:   row[9] || ''
       });
     }
   }
@@ -1227,6 +1377,7 @@ async function loadData(){
     initFilters();
     renderBrowse();
     updateStats();
+    showAnnouncement();
   } catch(e){
     console.error('Load error:', e);
     document.getElementById('grid-browse').innerHTML = `
@@ -2007,6 +2158,51 @@ function clearProg(){
 }
 
 /* ══ INIT ════════════════════════════════════════════════════════ */
+
+/* ══ ANNOUNCEMENT POPUP ══════════════════════════════════════════ */
+let annDismissKey = 'hscAnnDismiss_' + TODAY.replace(/ /g,'_');
+
+function showAnnouncement(){
+  // Collect all unique popup entries from the sheet (col I = title, col J = msg)
+  const entries = vocab.filter(v => v.popup_title && v.popup_msg)
+    .reduce((acc, v) => {
+      const key = v.popup_title + '||' + v.popup_msg;
+      if(!acc.seen.has(key)){ acc.seen.add(key); acc.list.push({title:v.popup_title, msg:v.popup_msg}); }
+      return acc;
+    }, {seen: new Set(), list: []}).list;
+
+  if(!entries.length) return;
+
+  // Check if dismissed today
+  try{ if(localStorage.getItem(annDismissKey)) return; }catch(e){}
+
+  // Pick a random entry if multiple
+  const entry = entries[Math.floor(Math.random() * entries.length)];
+
+  document.getElementById('ann-title-el').textContent = entry.title;
+  document.getElementById('ann-msg-el').textContent   = entry.msg;
+
+  // Show after brief delay
+  setTimeout(() => {
+    document.getElementById('ann-overlay').classList.add('open');
+  }, 800);
+}
+
+function closeAnn(){
+  triggerHaptic();
+  document.getElementById('ann-overlay').classList.remove('open');
+}
+
+function dismissAnn(){
+  triggerHaptic();
+  try{ localStorage.setItem(annDismissKey, '1'); }catch(e){}
+  closeAnn();
+}
+
+function closeAnnIfBg(e){
+  if(e.target.id === 'ann-overlay') closeAnn();
+}
+
 window.addEventListener('load', loadData);
 
 // Handle visibility change (fix speech synthesis on iOS)
