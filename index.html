@@ -106,10 +106,15 @@ body.no-nav{
   position:sticky;top:0;z-index:900;
   padding:.7rem 1rem .6rem;
   border-bottom:1px solid var(--border);
-  transition:transform .35s ease,box-shadow .3s ease;
+  transition:transform .35s ease,box-shadow .3s ease,margin-bottom .35s ease;
   will-change:transform;
 }
-.header.header-hidden{transform:translateY(-100%);pointer-events:none;}
+.header.header-hidden{
+  transform:translateY(-100%);
+  pointer-events:none;
+  /* Negative margin collapses sticky space so content fills upward */
+  margin-bottom:calc(-1 * var(--hdr-h, 0px));
+}
 .header:not(.header-hidden){box-shadow:var(--shadow-md);}
 
 #header-show-tab{
@@ -188,6 +193,11 @@ body.no-nav{
    LAYOUT
 ═══════════════════════════════════════════════ */
 .main-container{max-width:1200px;margin:0 auto;padding:1rem;}
+
+/* When header is manually hidden, main-container slides up */
+body.header-gone .main-container{
+  /* handled via JS padding-top on body */
+}
 
 /* ═══════════════════════════════════════════════
    CONTROLS
@@ -319,67 +329,187 @@ html.dark select{
 }
 
 /* ═══════════════════════════════════════════════
-   FLASHCARDS
+   FLASHCARDS — redesigned
 ═══════════════════════════════════════════════ */
-.fc-wrap{width:100%;max-width:460px;margin:0 auto;}
-.fc-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;}
-.fc-counter{font-size:.82rem;font-weight:700;color:var(--text-sub);}
-.session-progress-wrap{width:100%;height:6px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:1rem;}
+
+/* ── FC section layout ─────────────────────── */
+#v-flash{display:flex;flex-direction:column;}
+.fc-page{
+  width:100%;max-width:520px;margin:0 auto;
+  display:flex;flex-direction:column;gap:.6rem;
+}
+
+/* ── Top bar: counter + progress ──────────── */
+.fc-topbar{
+  display:flex;align-items:center;gap:.7rem;
+}
+.fc-counter{
+  font-size:.8rem;font-weight:800;color:var(--text-sub);
+  white-space:nowrap;flex-shrink:0;
+}
+.session-progress-wrap{
+  flex:1;height:7px;background:var(--border);border-radius:99px;overflow:hidden;
+}
 #session-progress-fill{
   height:100%;width:0%;
   background:linear-gradient(90deg,var(--accent),#60a5fa);
   border-radius:99px;transition:width .4s ease;
 }
+.fc-cat-pill{
+  font-size:.65rem;font-weight:800;color:var(--accent);
+  background:var(--accent-soft);padding:3px 9px;border-radius:99px;
+  white-space:nowrap;flex-shrink:0;max-width:120px;
+  overflow:hidden;text-overflow:ellipsis;
+}
+
+/* ── The card ──────────────────────────────── */
 .flip-card{
   background:var(--card-bg);
-  height:58vh;max-height:480px;min-height:320px;
+  /* Use dvh so it fills visible area on mobile correctly */
+  height:clamp(280px, 46dvh, 460px);
   border-radius:var(--radius-xl);border:2px solid var(--border);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  text-align:center;padding:1.5rem;cursor:pointer;position:relative;
+  text-align:center;padding:1.4rem 1.2rem 2.2rem;
+  cursor:pointer;position:relative;
   box-shadow:var(--shadow-lg);overflow:hidden;
-  transition:transform .18s,box-shadow .18s;user-select:none;
+  transition:transform .16s cubic-bezier(.4,0,.2,1),box-shadow .16s;
+  user-select:none;
+  /* Subtle gradient tint */
+  background:linear-gradient(160deg,var(--card-bg) 70%,var(--ex-bg));
 }
-.flip-card:active{transform:scale(.985);}
+.flip-card:hover{box-shadow:var(--shadow-lg),0 0 0 3px var(--accent-soft);}
+.flip-card:active{transform:scale(.983);}
+
+/* Subtle animated bg dot */
+.flip-card::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 80% 20%, var(--accent-soft) 0%, transparent 55%);
+  opacity:.45;pointer-events:none;
+}
+html.dark .flip-card::after{opacity:.2;}
+
 .flip-card .fc-hint{
-  position:absolute;bottom:1.1rem;font-size:.76rem;
-  color:var(--text-sub);font-weight:600;
+  position:absolute;bottom:.85rem;left:0;right:0;
+  font-size:.7rem;color:var(--text-sub);font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:.35rem;
+  letter-spacing:.04em;opacity:.7;
 }
+.flip-card .fc-hint::before,.flip-card .fc-hint::after{
+  content:'';flex:1;max-width:40px;height:1px;background:var(--border);
+}
+
+/* Word side */
 .fc-en-text{
-  font-size:clamp(1.8rem,8vw,3rem);font-weight:800;
-  width:100%;word-break:break-word;line-height:1.1;letter-spacing:-.02em;
+  font-size:clamp(2rem,9vw,3.2rem);font-weight:800;
+  width:100%;word-break:break-word;line-height:1.05;letter-spacing:-.03em;
+  position:relative;z-index:1;
 }
+.fc-word-cat{
+  font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--text-sub);margin-bottom:.6rem;opacity:.7;
+}
+
+/* Meaning side */
 .fc-bn-text{
   font-family:'Noto Serif Bengali',serif;
-  font-size:clamp(1.3rem,6vw,2.2rem);line-height:1.4;width:100%;font-weight:700;
+  font-size:clamp(1.5rem,7vw,2.4rem);line-height:1.35;width:100%;font-weight:700;
+  position:relative;z-index:1;
+}
+.fc-pron-small{
+  font-family:monospace;font-size:.82rem;color:var(--text-sub);
+  font-weight:700;margin-top:.3rem;opacity:.8;
 }
 .fc-detail-box{
-  margin-top:.9rem;padding:.8rem 1rem;background:var(--ex-bg);
-  border-radius:var(--radius-md);width:100%;max-height:42%;overflow-y:auto;
+  margin-top:.85rem;padding:.75rem .9rem;background:var(--bg-main);
+  border-radius:var(--radius-md);width:100%;max-height:38%;overflow-y:auto;
+  text-align:left;border:1px solid var(--border);position:relative;z-index:1;
 }
-.fc-ex-en-small{font-size:clamp(.85rem,3vw,1rem);font-style:italic;color:var(--text-sub);line-height:1.4;font-weight:600;}
-.fc-ex-bn-small{font-family:'Noto Serif Bengali',serif;font-size:clamp(.85rem,3vw,1rem);color:var(--accent);font-weight:700;display:block;margin-top:5px;}
+.fc-ex-en-small{
+  font-size:clamp(.8rem,2.8vw,.95rem);font-style:italic;
+  color:var(--text-sub);line-height:1.45;font-weight:600;
+  border-left:2px solid var(--accent);padding-left:.5rem;
+}
+.fc-ex-bn-small{
+  font-family:'Noto Serif Bengali',serif;
+  font-size:clamp(.8rem,2.8vw,.95rem);color:var(--accent);
+  font-weight:700;display:block;margin-top:.4rem;
+}
+
+/* Speak btn */
 .fc-speak-btn{
-  position:absolute;top:1rem;right:1rem;font-size:1.5rem;
-  background:none;border:none;cursor:pointer;z-index:5;
-  transition:transform .15s;padding:4px;border-radius:8px;
+  position:absolute;top:.85rem;right:.85rem;font-size:1.4rem;
+  background:var(--card-bg);border:1.5px solid var(--border);
+  cursor:pointer;z-index:6;padding:5px 7px;border-radius:var(--radius-sm);
+  transition:transform .15s,background .15s,border-color .15s;
+  line-height:1;
 }
-.fc-speak-btn:hover{transform:scale(1.2);background:var(--accent-soft);}
-.fc-nav{display:flex;justify-content:center;gap:.7rem;margin-top:1rem;}
-.fc-nav-btn{flex:1;max-width:140px;height:3rem;font-size:.85rem;font-weight:800;letter-spacing:.04em;border-radius:var(--radius-md);}
-.fc-rate-row{display:flex;gap:.5rem;margin-top:.7rem;justify-content:center;}
+.fc-speak-btn:hover{transform:scale(1.1);background:var(--accent-soft);border-color:var(--accent);}
+.fc-speak-btn:active{transform:scale(.93);}
+
+/* Star badge position in card */
+.flip-card .star-badge{font-size:.9rem;margin-left:4px;}
+
+/* ── Rate row ──────────────────────────────── */
+.fc-rate-row{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;
+}
 .fc-rate-btn{
-  flex:1;max-width:110px;height:2.7rem;font-size:.78rem;font-weight:800;
-  border-radius:var(--radius-md);border:2px solid var(--border);background:var(--card-bg);
-  color:var(--text-main);cursor:pointer;
-  transition:background var(--transition),color var(--transition),border-color var(--transition);
-  font-family:inherit;
+  padding:.7rem .4rem;font-size:.78rem;font-weight:800;
+  border-radius:var(--radius-md);border:2px solid var(--border);
+  background:var(--card-bg);color:var(--text-main);cursor:pointer;
+  transition:background var(--transition),color var(--transition),
+             border-color var(--transition),transform .12s;
+  font-family:inherit;display:flex;flex-direction:column;
+  align-items:center;gap:3px;line-height:1;
 }
+.fc-rate-btn:active{transform:scale(.94);}
+.fc-rate-btn .rb-emoji{font-size:1.1rem;}
 .fc-rate-btn.easy{border-color:var(--correct);color:var(--correct);}
-.fc-rate-btn.easy:hover{background:var(--correct);color:#fff;}
+.fc-rate-btn.easy:hover{background:var(--correct);color:#fff;border-color:var(--correct);}
 .fc-rate-btn.hard{border-color:var(--review);color:var(--review);}
-.fc-rate-btn.hard:hover{background:var(--review);color:#fff;}
+.fc-rate-btn.hard:hover{background:var(--review);color:#fff;border-color:var(--review);}
 .fc-rate-btn.skip{border-color:var(--text-sub);color:var(--text-sub);}
 .fc-rate-btn.skip:hover{background:var(--text-sub);color:#fff;}
+
+/* ── Nav row ───────────────────────────────── */
+.fc-nav{
+  display:grid;grid-template-columns:1fr auto 1fr;gap:.5rem;align-items:center;
+}
+.fc-nav-btn{
+  height:2.9rem;font-size:.82rem;font-weight:800;
+  letter-spacing:.03em;border-radius:var(--radius-md);
+  display:flex;align-items:center;justify-content:center;gap:.35rem;
+}
+.fc-nav-center{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  font-size:.6rem;font-weight:800;color:var(--text-sub);letter-spacing:.04em;
+  white-space:nowrap;
+}
+.fc-nav-center .fc-nav-dots{display:flex;gap:4px;}
+.fc-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--border);
+  transition:background .2s,transform .2s;
+}
+.fc-dot.active{background:var(--accent);transform:scale(1.3);}
+
+/* ── Swipe hint ────────────────────────────── */
+.swipe-hint{
+  text-align:center;font-size:.65rem;color:var(--text-sub);font-weight:700;
+  opacity:.5;letter-spacing:.06em;text-transform:uppercase;
+}
+
+/* ── Mobile overrides ──────────────────────── */
+@media(max-width:480px){
+  .flip-card{
+    height:clamp(250px, 48dvh, 380px);
+    padding:1.1rem 1rem 2rem;
+  }
+  .fc-en-text{font-size:clamp(1.8rem,10vw,2.8rem);}
+  .fc-bn-text{font-size:clamp(1.35rem,8vw,2rem);}
+  .fc-rate-btn{padding:.6rem .3rem;font-size:.73rem;}
+  .fc-rate-btn .rb-emoji{font-size:1rem;}
+  .fc-nav-btn{height:2.6rem;font-size:.76rem;}
+}
 
 /* ═══════════════════════════════════════════════
    QUIZ
@@ -695,7 +825,7 @@ html.dark .skeleton-card::after{
   .action-btn{width:1.9rem;height:1.9rem;font-size:.82rem;}
   .bottom-nav .nav-label{font-size:.5rem;}
   .main-container{padding:.75rem;}
-  .fc-nav-btn{max-width:120px;font-size:.78rem;}
+  /* fc-nav-btn handled in FC section */
 }
 
 /* ═══════════════════════════════════════════════
@@ -710,28 +840,22 @@ section{animation:fadeUp .22s ease both;}
 ═══════════════════════════════════════════════ */
 .ann-overlay{
   position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1300;
-  display:flex;align-items:flex-end;justify-content:center;
+  display:flex;align-items:center;justify-content:center;
+  padding:1rem;
   opacity:0;pointer-events:none;transition:opacity .3s;
 }
-@media(min-width:560px){.ann-overlay{align-items:center;}}
 .ann-overlay.open{opacity:1;pointer-events:auto;}
 .ann-box{
   background:var(--card-bg);
-  border-radius:var(--radius-xl) var(--radius-xl) 0 0;
-  width:100%;max-width:480px;max-height:85vh;overflow-y:auto;
+  border-radius:var(--radius-xl);
+  width:100%;max-width:460px;max-height:88vh;overflow-y:auto;
   padding:2rem 1.5rem 1.5rem;position:relative;
-  box-shadow:0 -8px 40px rgba(0,0,0,.3);
-  transform:translateY(40px);transition:transform .32s cubic-bezier(.34,1.4,.64,1);
+  box-shadow:0 24px 60px rgba(0,0,0,.35);
+  transform:scale(.92) translateY(12px);
+  transition:transform .3s cubic-bezier(.34,1.4,.64,1),opacity .3s;
 }
-@media(min-width:560px){
-  .ann-box{border-radius:var(--radius-xl);box-shadow:0 24px 60px rgba(0,0,0,.35);transform:translateY(30px);}
-}
-.ann-overlay.open .ann-box{transform:translateY(0);}
-.ann-box::before{
-  content:'';position:absolute;top:.75rem;left:50%;transform:translateX(-50%);
-  width:38px;height:4px;background:var(--border);border-radius:99px;
-}
-@media(min-width:560px){.ann-box::before{display:none;}}
+.ann-overlay.open .ann-box{transform:scale(1) translateY(0);}
+.ann-box::before{display:none;}
 .ann-badge{
   display:inline-flex;align-items:center;gap:6px;
   background:var(--accent-soft);color:var(--accent);
@@ -781,27 +905,7 @@ section{animation:fadeUp .22s ease both;}
   .mode-controls label{flex:1 1 100%;justify-content:center;font-size:.8rem;}
 }
 
-/* -- Flashcard full-height on mobile -- */
-.fc-shell{display:flex;flex-direction:column;width:100%;max-width:480px;margin:0 auto;}
-.flip-card{
-  height:clamp(260px, 52vw, 420px);
-  min-height:unset;max-height:unset;
-}
-@media(max-width:480px){
-  .flip-card{height:clamp(240px,56vw,320px);}
-  .fc-en-text{font-size:clamp(1.6rem,10vw,2.5rem);}
-  .fc-bn-text{font-size:clamp(1.2rem,7vw,1.9rem);}
-  .fc-nav{gap:.5rem;}
-  .fc-nav-btn{height:2.7rem;font-size:.8rem;letter-spacing:.02em;}
-  .fc-rate-row{gap:.4rem;}
-  .fc-rate-btn{height:2.5rem;font-size:.75rem;max-width:none;flex:1;}
-}
-
-/* Swipe hint strip */
-.swipe-hint{
-  text-align:center;font-size:.68rem;color:var(--text-sub);font-weight:600;
-  opacity:.6;letter-spacing:.04em;margin-top:-.2rem;
-}
+/* Flashcard mobile handled in the FC block above */
 
 /* -- Quiz mobile -- */
 @media(max-width:540px){
@@ -969,7 +1073,9 @@ section{animation:fadeUp .22s ease both;}
 
 <!-- FLASHCARDS -->
 <section id="v-flash" class="hidden" aria-label="Flashcards">
-  <div class="controls" style="justify-content:center;flex-wrap:wrap">
+
+  <!-- Config row -->
+  <div class="controls" style="justify-content:center;flex-wrap:wrap;margin-bottom:.8rem">
     <select id="fc-cat" aria-label="Category for flashcards"><option value="">All Categories</option></select>
     <select id="fc-mode" aria-label="Flashcard mode">
       <option value="all">All Words</option>
@@ -977,30 +1083,53 @@ section{animation:fadeUp .22s ease both;}
       <option value="new">🆕 New Only</option>
       <option value="important">⭐ Important</option>
     </select>
-    <button class="btn btn-primary" onclick="initFC()">▶ Start</button>
-    <label style="display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:700;cursor:pointer">
+    <button class="btn btn-primary" onclick="initFC()" style="min-width:110px">▶ Start</button>
+    <label style="display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap">
       <input type="checkbox" id="fc-auto-speak"> Auto Speak
     </label>
   </div>
-  <div class="fc-shell fc-wrap">
-    <div class="fc-meta">
+
+  <!-- Card area -->
+  <div class="fc-page">
+
+    <!-- Top bar -->
+    <div class="fc-topbar">
       <span class="fc-counter" id="fc-counter-text">0 / 0</span>
-      <span id="fc-cat-label" style="font-size:.76rem;font-weight:700;color:var(--text-sub)"></span>
+      <div class="session-progress-wrap"><div id="session-progress-fill"></div></div>
+      <span class="fc-cat-pill" id="fc-cat-label"></span>
     </div>
-    <div class="session-progress-wrap"><div id="session-progress-fill"></div></div>
-    <div id="fc-card" class="flip-card" role="button" aria-label="Flashcard - click to flip">
-      <p style="font-weight:700;opacity:.4;font-size:.92rem">Choose options &amp; press Start</p>
+
+    <!-- The card itself -->
+    <div id="fc-card" class="flip-card" role="button" tabindex="0" aria-label="Flashcard — tap to flip">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:.5rem;opacity:.35;position:relative;z-index:1">
+        <div style="font-size:2.5rem">🃏</div>
+        <p style="font-weight:700;font-size:.9rem">Choose options &amp; press Start</p>
+      </div>
     </div>
-    <div id="fc-rate-row" class="fc-rate-row" style="display:none">
-      <button class="fc-rate-btn easy" onclick="fcRate('easy')">😊 Easy</button>
-      <button class="fc-rate-btn hard" onclick="fcRate('hard')">😓 Hard</button>
-      <button class="fc-rate-btn skip" onclick="fcRate('skip')">⏭ Skip</button>
+
+    <!-- Rate row (shown after flip) -->
+    <div id="fc-rate-row" class="fc-rate-row" style="display:none" aria-label="Rate your recall">
+      <button class="fc-rate-btn easy" onclick="fcRate('easy')">
+        <span class="rb-emoji">😊</span>Easy
+      </button>
+      <button class="fc-rate-btn hard" onclick="fcRate('hard')">
+        <span class="rb-emoji">😓</span>Hard
+      </button>
+      <button class="fc-rate-btn skip" onclick="fcRate('skip')">
+        <span class="rb-emoji">⏭</span>Skip
+      </button>
     </div>
-    <div class="swipe-hint">← swipe or use arrow keys →</div>
+
+    <!-- Nav row -->
     <div class="fc-nav">
-      <button class="btn btn-outline fc-nav-btn" onclick="fcPrev()">← PREV</button>
-      <button class="btn btn-outline fc-nav-btn" onclick="fcNext()">NEXT →</button>
+      <button class="btn btn-outline fc-nav-btn" onclick="fcPrev()" aria-label="Previous card">← Prev</button>
+      <div class="fc-nav-center">
+        <div class="fc-nav-dots" id="fc-dots"></div>
+        <span class="swipe-hint">swipe card</span>
+      </div>
+      <button class="btn btn-outline fc-nav-btn" onclick="fcNext()" aria-label="Next card">Next →</button>
     </div>
+
   </div>
 </section>
 
@@ -1273,8 +1402,11 @@ window.addEventListener('scroll', () => {
   requestAnimationFrame(() => {
     const h = document.getElementById('main-header');
     if(window.scrollY > lastScrollY && window.scrollY > 100){
+      const hh = h.getBoundingClientRect().height;
+      document.documentElement.style.setProperty('--hdr-h', hh + 'px');
       h.classList.add('header-hidden');
     } else {
+      document.documentElement.style.setProperty('--hdr-h', '0px');
       h.classList.remove('header-hidden');
     }
     lastScrollY = window.scrollY;
@@ -1288,9 +1420,13 @@ function toggleHeaderManual(hide){
   const tab = document.getElementById('header-show-tab');
   headerManHide = hide;
   if(hide){
+    // Measure current header height and store as CSS var so margin-bottom can match
+    const hh = h.getBoundingClientRect().height;
+    document.documentElement.style.setProperty('--hdr-h', hh + 'px');
     h.classList.add('header-hidden');
     tab.style.display = 'block';
   } else {
+    document.documentElement.style.setProperty('--hdr-h', '0px');
     h.classList.remove('header-hidden');
     tab.style.display = 'none';
   }
@@ -1686,6 +1822,24 @@ function initFC(){
   showToast('▶ ' + fcList.length + ' cards loaded — tap to flip!');
 }
 
+function renderDotsFC(){
+  const dotsEl = document.getElementById('fc-dots');
+  if(!dotsEl || !fcList.length) return;
+  // Show up to 7 dots, with active dot highlighted
+  const total = fcList.length;
+  const maxDots = 7;
+  const dots = Math.min(total, maxDots);
+  let html = '';
+  for(let i = 0; i < dots; i++){
+    const mappedIdx = Math.round(i / (maxDots - 1) * (total - 1));
+    const isActive = (total <= maxDots)
+      ? i === fcIdx
+      : mappedIdx === fcIdx || (i === dots - 1 && fcIdx >= total - 1);
+    html += `<div class="fc-dot${isActive ? ' active' : ''}"></div>`;
+  }
+  dotsEl.innerHTML = html;
+}
+
 function renderFC(){
   if(!fcList.length) return;
   const v = fcList[fcIdx];
@@ -1693,33 +1847,39 @@ function renderFC(){
   const pct = ((fcIdx + 1) / fcList.length * 100);
   document.getElementById('session-progress-fill').style.width = pct + '%';
   document.getElementById('fc-counter-text').textContent = `${fcIdx + 1} / ${fcList.length}`;
+  renderDotsFC();
   const isImp = v.important >= 4;
 
   if(!fcFlipped){
     document.getElementById('fc-rate-row').style.display = 'none';
     card.innerHTML = `
       <button class="fc-speak-btn" onclick="event.stopPropagation();speak('${esc(v.en)}')" aria-label="Pronounce ${v.en}">🔊</button>
-      <span class="c-tag">${v.cat}</span>
-      <div class="fc-en-text">${v.en}${isImp ? '<span class="star-badge">★</span>' : ''}</div>
-      <p class="fc-hint">Tap card to reveal meaning</p>`;
+      <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:.4rem;width:100%">
+        <div class="fc-word-cat">${v.cat}</div>
+        <div class="fc-en-text">${v.en}${isImp ? '<span class="star-badge">★</span>' : ''}</div>
+      </div>
+      <p class="fc-hint">tap to reveal</p>`;
     if(document.getElementById('fc-auto-speak').checked) speak(v.en);
   } else {
-    document.getElementById('fc-rate-row').style.display = 'flex';
+    document.getElementById('fc-rate-row').style.display = 'grid';
     const famW = v.family
       ? v.family.split(',').map(f =>
-          `<span style="background:var(--accent-soft);color:var(--accent);padding:2px 8px;border-radius:99px;font-size:.76rem;font-weight:700">${f.trim()}</span>`
+          `<span style="background:var(--accent-soft);color:var(--accent);padding:2px 8px;border-radius:99px;font-size:.72rem;font-weight:700">${f.trim()}</span>`
         ).join('')
       : '';
     card.innerHTML = `
-      <div class="fc-bn-text">${v.bn}</div>
-      ${v.pron ? `<div style="font-family:monospace;font-size:.88rem;color:var(--text-sub);font-weight:700;margin-top:5px">/${v.pron}/</div>` : ''}
-      ${(v.ex_en || v.ex_bn || v.family) ? `
+      <button class="fc-speak-btn" onclick="event.stopPropagation();speak('${esc(v.en)}')" aria-label="Pronounce ${v.en}">🔊</button>
+      <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%;gap:.2rem">
+        <div class="fc-bn-text">${v.bn}</div>
+        ${v.pron ? `<div class="fc-pron-small">/${v.pron}/</div>` : ''}
+      </div>
+      ${(v.ex_en || v.ex_bn || famW) ? `
         <div class="fc-detail-box">
           ${v.ex_en ? `<p class="fc-ex-en-small">${v.ex_en}</p>` : ''}
           ${v.ex_bn ? `<span class="fc-ex-bn-small">${v.ex_bn}</span>` : ''}
           ${famW ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">${famW}</div>` : ''}
         </div>` : ''}
-      <p class="fc-hint">Rate yourself ↓</p>`;
+      <p class="fc-hint">rate yourself ↓</p>`;
   }
 }
 
