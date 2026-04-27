@@ -447,7 +447,7 @@ html.dark .flip-card::after{opacity:.18;}
 }
 .fc-en-text{
   /* Large, bold, always readable — shrinks only when truly needed */
-  font-size:2.8rem;
+  font-size:4.5rem;
   font-weight:800;
   letter-spacing:-.04em;
   line-height:1.05;
@@ -1983,7 +1983,7 @@ function autoFitCardText(){
     let fs = startFsEn;
     /* shrink until word fits width */
     let guard = 0;
-    while(enEl.scrollWidth > cardW && fs > 35 && guard++ < 40){
+    while(enEl.scrollWidth > cardW && fs > 36 && guard++ < 40){
       fs -= 2; enEl.style.fontSize = fs + 'px';
     }
   }
