@@ -903,10 +903,12 @@ section{animation:fadeUp .22s ease both;}
    ANNOUNCEMENT POPUP
 ═══════════════════════════════════════════════ */
 .ann-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1300;
+  position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1300;
   display:flex;align-items:center;justify-content:center;
   padding:1rem;
   opacity:0;pointer-events:none;transition:opacity .3s;
+  backdrop-filter:blur(8px) saturate(1.4);
+  -webkit-backdrop-filter:blur(8px) saturate(1.4);
 }
 .ann-overlay.open{opacity:1;pointer-events:auto;}
 .ann-box{
@@ -1975,8 +1977,10 @@ function autoFitCardText(){
   /* ── Front: English word ── */
   const enEl = card.querySelector('.fc-en-text');
   if(enEl){
-    enEl.style.fontSize = ''; /* reset first */
-    let fs = parseFloat(getComputedStyle(enEl).fontSize);
+    /* Always start from the ideal large size, not the computed (possibly already shrunken) size */
+    const startFsEn = window.innerWidth <= 480 ? 46 : 61; /* px equivalents of 2.9rem / 3.8rem */
+    enEl.style.fontSize = startFsEn + 'px';
+    let fs = startFsEn;
     /* shrink until word fits width */
     let guard = 0;
     while(enEl.scrollWidth > cardW && fs > 22 && guard++ < 40){
@@ -1987,8 +1991,9 @@ function autoFitCardText(){
   /* ── Back: Bengali meaning ── */
   const bnEl = card.querySelector('.fc-bn-text');
   if(bnEl){
-    bnEl.style.fontSize = ''; /* reset */
-    let fs = parseFloat(getComputedStyle(bnEl).fontSize);
+    const startFsBn = window.innerWidth <= 480 ? 35 : 45; /* px equivalents of 2.2rem / 2.8rem */
+    bnEl.style.fontSize = startFsBn + 'px';
+    let fs = startFsBn;
     /* shrink until text height fits ~40% of card height */
     const maxH = cardH * 0.45;
     let guard = 0;
