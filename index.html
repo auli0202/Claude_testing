@@ -21,25 +21,26 @@
    VARIABLES
 ═══════════════════════════════════════════════ */
 :root{
-  --bg-main:#f0f4ff;
+  /* ── Light mode — warm, eye-easy palette ── */
+  --bg-main:#f5f6fa;          /* very light cool-grey, not pure white */
   --card-bg:#ffffff;
-  --text-main:#0d1117;
-  --text-sub:#526070;
-  --accent:#2563eb;
-  --accent-soft:#dbeafe;
-  --accent-mid:#93c5fd;
-  --border:#dde4ef;
-  --nav-bg:rgba(255,255,255,0.96);
-  --correct:#16a34a;
-  --correct-soft:rgba(22,163,74,.1);
-  --wrong:#dc2626;
-  --wrong-soft:rgba(220,38,38,.1);
-  --review:#d97706;
-  --review-soft:rgba(217,119,6,.1);
-  --ex-bg:#f1f5fb;
-  --shadow:0 2px 12px rgba(37,99,235,.07);
-  --shadow-md:0 4px 20px rgba(37,99,235,.1);
-  --shadow-lg:0 10px 40px rgba(37,99,235,.14);
+  --text-main:#1a2333;        /* deep navy-grey, softer than near-black */
+  --text-sub:#5c6f82;         /* muted slate */
+  --accent:#3b6fd4;           /* calmer, slightly desaturated blue */
+  --accent-soft:#e8eef9;      /* very pale blue tint */
+  --accent-mid:#a8bfee;
+  --border:#e2e7f0;           /* gentle grey-blue border */
+  --nav-bg:rgba(251,252,255,0.96);
+  --correct:#1e7e4a;          /* forest green — less harsh than pure green */
+  --correct-soft:rgba(30,126,74,.09);
+  --wrong:#c0392b;            /* muted red, less aggressive */
+  --wrong-soft:rgba(192,57,43,.09);
+  --review:#b45309;           /* warm amber-brown */
+  --review-soft:rgba(180,83,9,.09);
+  --ex-bg:#f0f3f9;            /* barely-there blue-grey tint for example boxes */
+  --shadow:0 2px 10px rgba(59,111,212,.06);
+  --shadow-md:0 4px 18px rgba(59,111,212,.09);
+  --shadow-lg:0 10px 36px rgba(59,111,212,.12);
   --radius-xs:.4rem;
   --radius-sm:.6rem;
   --radius-md:1rem;
@@ -50,25 +51,26 @@
   --nav-h:4.6rem;
 }
 html.dark{
-  --bg-main:#0b1120;
-  --card-bg:#141f33;
-  --text-main:#e8f0fe;
-  --text-sub:#7a9abf;
-  --accent:#38bdf8;
-  --accent-soft:#0c2340;
-  --accent-mid:#0369a1;
-  --border:#1e3050;
-  --nav-bg:rgba(11,17,32,0.97);
-  --correct:#22c55e;
-  --correct-soft:rgba(34,197,94,.1);
-  --wrong:#f43f5e;
-  --wrong-soft:rgba(244,63,94,.1);
-  --review:#fbbf24;
-  --review-soft:rgba(251,191,36,.1);
-  --ex-bg:#0e1a2d;
-  --shadow:0 2px 12px rgba(0,0,0,.25);
-  --shadow-md:0 4px 20px rgba(0,0,0,.35);
-  --shadow-lg:0 10px 40px rgba(0,0,0,.5);
+  /* ── Dark mode — warm dark, easy on eyes ── */
+  --bg-main:#141a24;          /* deep blue-charcoal, not pure black */
+  --card-bg:#1c2535;          /* slightly lighter for cards */
+  --text-main:#dde4f0;        /* soft blue-white, not glaring */
+  --text-sub:#7d95b0;         /* muted blue-grey */
+  --accent:#5b9cf6;           /* softer cornflower blue — readable, not electric */
+  --accent-soft:#1e2d47;      /* very dark blue tint */
+  --accent-mid:#2d4a78;
+  --border:#253348;           /* visible but not harsh */
+  --nav-bg:rgba(17,22,34,0.97);
+  --correct:#34a86e;          /* sage green — calm, not neon */
+  --correct-soft:rgba(52,168,110,.12);
+  --wrong:#e05c5c;            /* warm coral-red, easier than hot red */
+  --wrong-soft:rgba(224,92,92,.12);
+  --review:#d4882a;           /* warm amber */
+  --review-soft:rgba(212,136,42,.12);
+  --ex-bg:#19222f;            /* dark blue-grey example bg */
+  --shadow:0 2px 12px rgba(0,0,0,.3);
+  --shadow-md:0 4px 20px rgba(0,0,0,.4);
+  --shadow-lg:0 10px 40px rgba(0,0,0,.55);
 }
 
 /* ═══════════════════════════════════════════════
@@ -103,19 +105,27 @@ body.no-nav{
   background:var(--nav-bg);
   backdrop-filter:blur(20px) saturate(1.8);
   -webkit-backdrop-filter:blur(20px) saturate(1.8);
-  position:sticky;top:0;z-index:900;
+  /* NOT sticky — fixed instead, with a spacer div below */
+  position:fixed;top:0;left:0;right:0;z-index:900;
   padding:.7rem 1rem .6rem;
   border-bottom:1px solid var(--border);
-  transition:transform .35s ease,box-shadow .3s ease,margin-bottom .35s ease;
+  /* Only animate transform — no layout properties */
+  transition:transform .3s cubic-bezier(.4,0,.2,1),box-shadow .3s ease;
   will-change:transform;
 }
 .header.header-hidden{
-  transform:translateY(-100%);
+  transform:translateY(-110%);
   pointer-events:none;
-  /* Negative margin collapses sticky space so content fills upward */
-  margin-bottom:calc(-1 * var(--hdr-h, 0px));
+  box-shadow:none;
 }
 .header:not(.header-hidden){box-shadow:var(--shadow-md);}
+
+/* Spacer that matches header height so fixed header doesn't overlap content */
+#header-spacer{
+  height:var(--hdr-h, 0px);
+  transition:height .3s cubic-bezier(.4,0,.2,1);
+  flex-shrink:0;
+}
 
 #header-show-tab{
   position:fixed;top:0;left:50%;transform:translateX(-50%);
@@ -728,7 +738,7 @@ html.dark .flip-card::after{opacity:.2;}
   white-space:nowrap;max-width:88vw;overflow:hidden;text-overflow:ellipsis;
   box-shadow:0 4px 18px rgba(0,0,0,.3);
 }
-html.dark #toast{background:#e2e8f0;color:#0f172a;}
+html.dark #toast{background:#dde4f0;color:#141a24;}
 @media(min-width:768px){
   #toast{bottom:1.5rem;}
 }
@@ -752,7 +762,7 @@ html.dark #toast{background:#e2e8f0;color:#0f172a;}
   animation:shimmer 1.5s infinite;
 }
 html.dark .skeleton-card::after{
-  background:linear-gradient(90deg,transparent 30%,rgba(255,255,255,.07) 50%,transparent 70%);
+  background:linear-gradient(90deg,transparent 30%,rgba(255,255,255,.05) 50%,transparent 70%);
   background-size:200% 100%;
 }
 @keyframes shimmer{
@@ -1011,6 +1021,7 @@ section{animation:fadeUp .22s ease both;}
     </div>
   </div>
 </header>
+<div id="header-spacer" aria-hidden="true"></div>
 
 <!-- ── MAIN ── -->
 <main class="main-container">
@@ -1396,20 +1407,36 @@ document.getElementById('nav-toggle').onclick = function(){
 
 /* ══ HEADER SCROLL HIDE ═════════════════════════════════════════ */
 let lastScrollY = 0, headerManHide = false, scrollTicking = false;
+let _headerHidden = false;
+
+// Measure once at load and on resize; never measure mid-scroll
+function measureHeader(){
+  const h = document.getElementById('main-header');
+  if(!h) return;
+  const hh = h.offsetHeight;
+  document.documentElement.style.setProperty('--hdr-h', hh + 'px');
+}
+window.addEventListener('load', measureHeader);
+window.addEventListener('resize', measureHeader, {passive:true});
+
 window.addEventListener('scroll', () => {
   if(headerManHide || scrollTicking) return;
   scrollTicking = true;
   requestAnimationFrame(() => {
+    const sy = window.scrollY;
+    const delta = sy - lastScrollY;
     const h = document.getElementById('main-header');
-    if(window.scrollY > lastScrollY && window.scrollY > 100){
-      const hh = h.getBoundingClientRect().height;
-      document.documentElement.style.setProperty('--hdr-h', hh + 'px');
+
+    // Hysteresis: need >6px movement to trigger, different thresholds for show/hide
+    if(!_headerHidden && delta > 6 && sy > 120){
+      _headerHidden = true;
       h.classList.add('header-hidden');
-    } else {
-      document.documentElement.style.setProperty('--hdr-h', '0px');
+    } else if(_headerHidden && (delta < -6 || sy < 60)){
+      _headerHidden = false;
       h.classList.remove('header-hidden');
     }
-    lastScrollY = window.scrollY;
+
+    lastScrollY = sy;
     scrollTicking = false;
   });
 }, {passive:true});
@@ -1419,16 +1446,16 @@ function toggleHeaderManual(hide){
   const h = document.getElementById('main-header');
   const tab = document.getElementById('header-show-tab');
   headerManHide = hide;
+  _headerHidden = hide;
   if(hide){
-    // Measure current header height and store as CSS var so margin-bottom can match
-    const hh = h.getBoundingClientRect().height;
-    document.documentElement.style.setProperty('--hdr-h', hh + 'px');
     h.classList.add('header-hidden');
     tab.style.display = 'block';
-  } else {
+    // Collapse the spacer so content fills up
     document.documentElement.style.setProperty('--hdr-h', '0px');
+  } else {
     h.classList.remove('header-hidden');
     tab.style.display = 'none';
+    measureHeader();
   }
 }
 document.getElementById('btn-header-hide').onclick = () => toggleHeaderManual(true);
