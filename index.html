@@ -375,8 +375,10 @@ html.dark select{
 /* ── The card ──────────────────────────────── */
 .flip-card{
   background:var(--card-bg);
-  /* Use dvh so it fills visible area on mobile correctly */
-  height:clamp(280px, 46dvh, 460px);
+  /* Fixed height — text scales, card does NOT grow */
+  height:420px;
+  min-height:420px;
+  max-height:420px;
   border-radius:var(--radius-xl);border:2px solid var(--border);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   text-align:center;padding:1.4rem 1.2rem 2.2rem;
@@ -410,9 +412,9 @@ html.dark .flip-card::after{opacity:.2;}
 
 /* Word side */
 .fc-en-text{
-  font-size:clamp(2rem,9vw,3.2rem);font-weight:800;
-  width:100%;word-break:break-word;line-height:1.05;letter-spacing:-.03em;
-  position:relative;z-index:1;
+  font-size:clamp(1.4rem,7vw,3.2rem);font-weight:800;
+  width:100%;word-break:break-word;line-height:1.1;letter-spacing:-.03em;
+  position:relative;z-index:1;overflow-wrap:break-word;
 }
 .fc-word-cat{
   font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;
@@ -422,17 +424,18 @@ html.dark .flip-card::after{opacity:.2;}
 /* Meaning side */
 .fc-bn-text{
   font-family:'Noto Serif Bengali',serif;
-  font-size:clamp(1.5rem,7vw,2.4rem);line-height:1.35;width:100%;font-weight:700;
-  position:relative;z-index:1;
+  font-size:clamp(1.1rem,5.5vw,2.2rem);line-height:1.35;width:100%;font-weight:700;
+  position:relative;z-index:1;overflow-wrap:break-word;
 }
 .fc-pron-small{
   font-family:monospace;font-size:.82rem;color:var(--text-sub);
   font-weight:700;margin-top:.3rem;opacity:.8;
 }
 .fc-detail-box{
-  margin-top:.85rem;padding:.75rem .9rem;background:var(--bg-main);
-  border-radius:var(--radius-md);width:100%;max-height:38%;overflow-y:auto;
+  margin-top:.75rem;padding:.65rem .85rem;background:var(--bg-main);
+  border-radius:var(--radius-md);width:100%;max-height:42%;overflow-y:auto;
   text-align:left;border:1px solid var(--border);position:relative;z-index:1;
+  scrollbar-width:thin;
 }
 .fc-ex-en-small{
   font-size:clamp(.8rem,2.8vw,.95rem);font-style:italic;
@@ -511,11 +514,13 @@ html.dark .flip-card::after{opacity:.2;}
 /* ── Mobile overrides ──────────────────────── */
 @media(max-width:480px){
   .flip-card{
-    height:clamp(250px, 48dvh, 380px);
-    padding:1.1rem 1rem 2rem;
+    height:360px;
+    min-height:360px;
+    max-height:360px;
+    padding:1rem .9rem 2rem;
   }
-  .fc-en-text{font-size:clamp(1.8rem,10vw,2.8rem);}
-  .fc-bn-text{font-size:clamp(1.35rem,8vw,2rem);}
+  .fc-en-text{font-size:clamp(1.3rem,8vw,2.6rem);}
+  .fc-bn-text{font-size:clamp(1rem,6.5vw,1.9rem);}
   .fc-rate-btn{padding:.6rem .3rem;font-size:.73rem;}
   .fc-rate-btn .rb-emoji{font-size:1rem;}
   .fc-nav-btn{height:2.6rem;font-size:.76rem;}
@@ -1907,6 +1912,30 @@ function renderFC(){
           ${famW ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">${famW}</div>` : ''}
         </div>` : ''}
       <p class="fc-hint">rate yourself ↓</p>`;
+  }
+  requestAnimationFrame(autoFitCardText);
+}
+
+/* Dynamically shrink text inside card if it overflows */
+function autoFitCardText(){
+  const card = document.getElementById('fc-card');
+  if(!card) return;
+  // Fit English text
+  const enEl = card.querySelector('.fc-en-text');
+  if(enEl){
+    let fs = parseFloat(getComputedStyle(enEl).fontSize);
+    const maxW = card.clientWidth - 40;
+    while(enEl.scrollWidth > maxW && fs > 16){ fs -= 1; enEl.style.fontSize = fs + 'px'; }
+  }
+  // Fit Bengali text
+  const bnEl = card.querySelector('.fc-bn-text');
+  if(bnEl){
+    let fs = parseFloat(getComputedStyle(bnEl).fontSize);
+    const maxW = card.clientWidth - 40;
+    let safety = 0;
+    while(bnEl.scrollHeight > (card.clientHeight * 0.38) && fs > 14 && safety++ < 30){
+      fs -= 1; bnEl.style.fontSize = fs + 'px';
+    }
   }
 }
 
