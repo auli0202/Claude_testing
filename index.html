@@ -181,14 +181,14 @@ body.no-nav{
 
 /* ── Mobile Hamburger Menu ─────────── */
 #mobile-menu-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:850;
+  position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1050;
   opacity:0;pointer-events:none;transition:opacity .25s;
   backdrop-filter:blur(4px);
 }
 #mobile-menu-overlay.open{opacity:1;pointer-events:auto;}
 #mobile-menu-panel{
   position:fixed;top:0;right:0;bottom:0;width:min(300px,82vw);
-  background:var(--card-bg);z-index:860;
+  background:var(--card-bg);z-index:1060;
   transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
   display:flex;flex-direction:column;
   border-left:1px solid var(--border);
@@ -906,6 +906,42 @@ html.dark .skeleton-card::after{
 /* ═══════════════════════════════════════════════
    BOTTOM NAV
 ═══════════════════════════════════════════════ */
+/* Nav hide/show arrow tab — sits just above the nav bar */
+#nav-arrow-tab{
+  position:fixed;
+  bottom:var(--nav-h);
+  left:50%;
+  transform:translateX(-50%);
+  z-index:801;
+  background:var(--nav-bg);
+  border:1px solid var(--border);
+  border-bottom:none;
+  border-radius:12px 12px 0 0;
+  padding:3px 18px 1px;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;color:var(--text-sub);
+  transition:bottom .35s cubic-bezier(.4,0,.2,1),background var(--transition),color var(--transition);
+  user-select:none;
+  box-shadow:0 -2px 8px rgba(0,0,0,.08);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  gap:3px;
+}
+#nav-arrow-tab:hover{color:var(--accent);background:var(--accent-soft);}
+#nav-arrow-tab .arrow-icon{
+  font-size:.8rem;
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+  line-height:1;
+}
+/* When nav is hidden, tab sits at bottom of screen */
+#nav-arrow-tab.nav-gone{
+  bottom:0;
+  border-radius:12px 12px 0 0;
+}
+#nav-arrow-tab.nav-gone .arrow-icon{
+  transform:rotate(180deg);
+}
 .bottom-nav{
   position:fixed;bottom:0;left:0;right:0;
   height:var(--nav-h);
@@ -945,6 +981,7 @@ html.dark .skeleton-card::after{
   .bottom-nav{display:none!important;}
   body{padding-bottom:2.5rem;}
   #nav-toggle{display:none;}
+  #nav-arrow-tab{display:none!important;}
   .word-grid{grid-template-columns:repeat(auto-fill,minmax(320px,1fr));}
   .controls{max-width:960px;margin-left:auto;margin-right:auto;}
   .dash-grid{grid-template-columns:repeat(3,1fr);}
@@ -1446,6 +1483,11 @@ html.dark select option{
 
 </main>
 
+<!-- NAV HIDE/SHOW ARROW TAB -->
+<button id="nav-arrow-tab" onclick="toggleBottomNav()" aria-label="Toggle navigation bar" title="Hide/show navigation">
+  <span class="arrow-icon">▼</span>
+</button>
+
 <!-- BOTTOM NAV (mobile) -->
 <nav class="bottom-nav" id="main-nav" aria-label="Main navigation">
   <button class="nav-item" onclick="showV('dash')">
@@ -1630,6 +1672,20 @@ document.getElementById('btn-full').onclick = function(){
 document.addEventListener('fullscreenchange', () => {
   document.getElementById('btn-full').textContent = document.fullscreenElement ? '⛶' : '⛶';
 });
+
+/* ══ BOTTOM NAV TOGGLE (arrow tab) ════════════════════════════ */
+let _navHidden = false;
+function toggleBottomNav(){
+  triggerHaptic();
+  _navHidden = !_navHidden;
+  const nav  = document.getElementById('main-nav');
+  const tab  = document.getElementById('nav-arrow-tab');
+  nav.classList.toggle('nav-hidden', _navHidden);
+  tab.classList.toggle('nav-gone',   _navHidden);
+  // When nav hidden, body padding shrinks; when shown, restores
+  document.body.classList.toggle('no-nav', _navHidden);
+  showToast(_navHidden ? '📲 Navbar hidden — tap ▲ to restore' : '📲 Navbar visible');
+}
 
 /* ══ NAV TOGGLE — opens mobile slide menu ══════════════════════ */
 document.getElementById('nav-toggle').onclick = function(){
