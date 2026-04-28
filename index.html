@@ -2647,10 +2647,9 @@ function renderSpell(){
       <span style="font-size:.8rem;font-weight:700;color:var(--wrong)">❌ ${spellNo}</span>
     </div>
     <div class="spell-clue">${v.bn}</div>
-    ${v.pron ? `<div class="spell-pron">/${v.pron}/</div>` : ''}
     <div class="letter-boxes" aria-label="Letter boxes">${boxes}</div>
-    <input class="spell-input" id="spell-inp" type="text"
-      autocomplete="new-password" autocorrect="off" autocapitalize="none" spellcheck="false"
+    <input class="spell-input" id="spell-inp" type="search"
+      autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
       data-form-type="other" inputmode="text"
       placeholder="Type the English word…"
       aria-label="Type your answer">
