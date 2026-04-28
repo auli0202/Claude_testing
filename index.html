@@ -406,7 +406,7 @@ html.dark select{
 
 /* Larger, more readable Bengali text */
 .c-bn{font-family:'Noto Serif Bengali',serif;font-size:1.25rem;color:var(--text-main);font-weight:700;margin-bottom:.55rem;line-height:1.5;}
-.c-pron{font-size:.88rem;color:var(--text-sub);font-family:'Courier New',monospace;margin-bottom:.55rem;font-weight:700;background:var(--ex-bg);display:inline-block;padding:2px 8px;border-radius:6px;}
+.c-pron{font-size:.88rem;color:var(--text-sub);font-family:'Courier New',monospace;margin-bottom:.55rem;font-weight:700;/*background:var(--ex-bg)*/;display:inline-block;padding:2px 8px;border-radius:6px;}
 .c-ex-en{
   font-size:.95rem;font-style:italic;color:var(--text-sub);margin-bottom:.55rem;
   padding:.55rem .75rem;border-left:3px solid var(--accent);background:var(--ex-bg);
@@ -417,7 +417,7 @@ html.dark select{
   font-weight:600;line-height:1.55;margin-bottom:.75rem;
 }
 .c-family-wrap{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.9rem;}
-.c-family{font-size:.8rem;color:var(--accent);font-weight:600;background:var(--accent-soft);padding:3px 10px;border-radius:99px;}
+.c-family{font-size:.8rem;color:var(--accent);font-weight:600;background:var(--accent-soft);padding:3px 10px;border-radius:0 var(--radius-sm) var(--radius-sm) 0; border-left: 3px solid var(--accent);}
 .c-actions{display:flex;gap:.5rem;margin-top:auto;border-top:1.5px solid var(--border);padding-top:.9rem;}
 .s-btn{
   flex:1;padding:.52rem;border-radius:var(--radius-sm);border:2px solid var(--border);
