@@ -1500,6 +1500,19 @@ input:-webkit-autofill:active{
       <option value="important">⭐ Important</option>
       <option value="new">🆕 New Only</option>
     </select>
+    <select id="spell-count" aria-label="Number of words">
+      <option value="0">All Words</option>
+      <option value="10">10 Words</option>
+      <option value="20" selected>20 Words</option>
+      <option value="30">30 Words</option>
+      <option value="50">50 Words</option>
+    </select>
+    <select id="spell-timer" aria-label="Spell timer">
+      <option value="0">No Timer</option>
+      <option value="15">15s / word</option>
+      <option value="20">20s / word</option>
+      <option value="30">30s / word</option>
+    </select>
     <button class="btn btn-primary" onclick="initSpell()">✍️ Start Test</button>
   </div>
   <div id="spell-area"></div>
@@ -1580,6 +1593,7 @@ let fcList = [], fcIdx = 0, fcFlipped = false;
 let qList  = [], qIdx  = 0, qScore   = 0, qWrong = [];
 let qTimerInt = null, qTimerSec = 0;
 let spellList = [], spellIdx = 0, spellOk = 0, spellNo = 0, spellHints = 0;
+let spellTimerInt = null, spellTimerSec = 0;
 let studyList = [], studyIdx  = 0, studyShown = false;
 
 const TODAY = new Date().toDateString();
@@ -2578,21 +2592,27 @@ function checkQ(btn, isCor, corBn){
 
 /* ══ SPELLING TEST ═══════════════════════════════════════════════ */
 function initSpell(){
-  triggerHaptic();
-  const cat  = document.getElementById('spell-cat').value;
-  const fltr = document.getElementById('spell-filter').value;
-  let pool   = vocab.filter(v => !cat || v.cat === cat);
-  if(fltr === 'review')    pool = pool.filter(v => progress[v.en] === 'r');
+  triggerHaptic(); clearSpellTimer();
+  const cat   = document.getElementById('spell-cat').value;
+  const fltr  = document.getElementById('spell-filter').value;
+  const count = parseInt(document.getElementById('spell-count')?.value || '0');
+  let pool    = vocab.filter(v => !cat || v.cat === cat);
+  if(fltr === 'review')         pool = pool.filter(v => progress[v.en] === 'r');
   else if(fltr === 'important') pool = pool.filter(v => v.important >= 4);
-  else if(fltr === 'new') pool = pool.filter(v => !progress[v.en]);
+  else if(fltr === 'new')       pool = pool.filter(v => !progress[v.en]);
   if(!pool.length){ showToast('No words found for this filter.'); return; }
-  spellList  = pool.sort(() => Math.random() - .5);
+  pool = pool.sort(() => Math.random() - .5);
+  if(count > 0) pool = pool.slice(0, count);
+  spellList  = pool;
   spellIdx = 0; spellOk = 0; spellNo = 0; spellHints = 0;
   renderSpell();
   showToast('✍️ ' + spellList.length + ' words to spell');
 }
 
+function clearSpellTimer(){ clearInterval(spellTimerInt); spellTimerInt = null; }
+
 function renderSpell(){
+  clearSpellTimer();
   const area = document.getElementById('spell-area');
   if(spellIdx >= spellList.length){
     const tot = spellOk + spellNo;
@@ -2617,17 +2637,21 @@ function renderSpell(){
   const boxes = v.en.split('').map((_,i) => `<div class="letter-box" id="lb-${i}">_</div>`).join('');
   const pctW  = (spellIdx / spellList.length * 100).toFixed(0);
 
+  const timerSecs = parseInt(document.getElementById('spell-timer')?.value || '0');
   area.innerHTML = `<div class="spell-card">
     <div class="quiz-progress-wrap"><div class="quiz-progress-fill" style="width:${pctW}%"></div></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem;flex-wrap:wrap;gap:.4rem">
       <span class="quiz-qnum">${spellIdx + 1} / ${spellList.length}</span>
+      ${timerSecs ? `<span class="quiz-timer ok" id="spell-timer-el" role="timer">${timerSecs}s</span>` : ''}
       <span style="font-size:.8rem;font-weight:700;color:var(--correct)">✅ ${spellOk}</span>
       <span style="font-size:.8rem;font-weight:700;color:var(--wrong)">❌ ${spellNo}</span>
     </div>
     <div class="spell-clue">${v.bn}</div>
+    ${v.pron ? `<div class="spell-pron">/${v.pron}/</div>` : ''}
     <div class="letter-boxes" aria-label="Letter boxes">${boxes}</div>
     <input class="spell-input" id="spell-inp" type="text"
-      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+      autocomplete="new-password" autocorrect="off" autocapitalize="none" spellcheck="false"
+      data-form-type="other" inputmode="text"
       placeholder="Type the English word…"
       aria-label="Type your answer">
     <div class="spell-result" id="spell-res" aria-live="polite"></div>
@@ -2668,6 +2692,32 @@ function renderSpell(){
     }
   });
   setTimeout(() => inp.focus(), 100);
+
+  // Spell timer
+  if(timerSecs){
+    spellTimerSec = timerSecs;
+    spellTimerInt = setInterval(() => {
+      spellTimerSec--;
+      const el = document.getElementById('spell-timer-el');
+      if(!el){ clearSpellTimer(); return; }
+      el.textContent = spellTimerSec + 's';
+      el.className = 'quiz-timer ' + (spellTimerSec > 7 ? 'ok' : spellTimerSec > 3 ? 'warn' : 'danger');
+      if(spellTimerSec <= 0){
+        clearSpellTimer();
+        const res = document.getElementById('spell-res');
+        const inp2 = document.getElementById('spell-inp');
+        if(res && inp2 && !inp2.disabled){
+          inp2.disabled = true;
+          inp2.className = 'spell-input wrong-inp';
+          res.innerHTML = '⏱️ Time up! Answer: <strong>' + spellList[spellIdx].en + '</strong>';
+          res.className = 'spell-result no';
+          spellNo++;
+          showToast('⏱️ Time up!', 900);
+          setTimeout(() => { spellIdx++; spellHints = 0; renderSpell(); }, 1800);
+        }
+      }
+    }, 1000);
+  }
 }
 
 function hintSpell(){
@@ -2683,7 +2733,7 @@ function hintSpell(){
 }
 
 function checkSpell(){
-  triggerHaptic();
+  triggerHaptic(); clearSpellTimer();
   const v   = spellList[spellIdx];
   const inp = document.getElementById('spell-inp');
   const res = document.getElementById('spell-res');
@@ -2710,7 +2760,7 @@ function checkSpell(){
 }
 
 function skipSpell(){
-  triggerHaptic(); spellHints = 0; spellIdx++; renderSpell();
+  triggerHaptic(); clearSpellTimer(); spellHints = 0; spellIdx++; renderSpell();
 }
 
 /* ══ SAVED / LIBRARY ═════════════════════════════════════════════ */
