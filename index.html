@@ -2655,9 +2655,9 @@ function renderSpell(){
       aria-label="Type your answer">
     <div class="spell-result" id="spell-res" aria-live="polite"></div>
     <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-bottom:.7rem">
-      <button class="btn btn-primary" onclick="checkSpell()">✔ Check</button>
-      <button class="btn btn-outline" onclick="hintSpell()">💡 Hint</button>
-      <button class="btn" style="border:1.5px solid var(--border)" onclick="skipSpell()">⏭ Skip</button>
+      <button class="btn btn-primary" onpointerdown="event.preventDefault()" onclick="checkSpell()">✔ Check</button>
+      <button class="btn btn-outline" onpointerdown="event.preventDefault()" onclick="hintSpell()">💡 Hint</button>
+      <button class="btn" style="border:1.5px solid var(--border)" onpointerdown="event.preventDefault()" onclick="skipSpell()">⏭ Skip</button>
     </div>
     <button onclick="speak('${esc(v.en)}')" style="background:none;border:none;font-size:.9rem;cursor:pointer;color:var(--text-sub);padding:6px;border-radius:8px" aria-label="Hear the word">🔊 Hear the word</button>
   </div>`;
@@ -2750,7 +2750,7 @@ function hintSpell(){
     if(lb){ lb.textContent = v.en[i]; lb.className = 'letter-box revealed'; }
   }
   const inp = document.getElementById('spell-inp');
-  if(inp) inp.value = v.en.slice(0, spellHints);
+  if(inp){ inp.value = v.en.slice(0, spellHints); inp.focus(); }
 }
 
 function checkSpell(){
@@ -2770,12 +2770,14 @@ function checkSpell(){
       const lb = document.getElementById('lb-' + i);
       if(lb){ lb.textContent = v.en[i]; lb.className = 'letter-box correct-box'; }
     });
+    inp.focus();
     setTimeout(() => { spellIdx++; spellHints = 0; renderSpell(); }, 1400);
   } else {
     inp.className = 'spell-input wrong-inp';
     res.innerHTML = `❌ Answer: <strong>${v.en}</strong>${v.ex_en ? `<div class="spell-reveal-ex">${v.ex_en}</div>` : ''}`;
     res.className = 'spell-result no';
     spellNo++;
+    inp.focus();
     setTimeout(() => { spellIdx++; spellHints = 0; renderSpell(); }, 2000);
   }
 }
