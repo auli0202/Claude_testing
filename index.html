@@ -120,37 +120,55 @@ body.no-nav{
   background:var(--nav-bg);
   backdrop-filter:blur(20px) saturate(1.8);
   -webkit-backdrop-filter:blur(20px) saturate(1.8);
-  /* NOT sticky — fixed instead, with a spacer div below */
   position:fixed;top:0;left:0;right:0;z-index:900;
   padding:.7rem 1rem .6rem;
   border-bottom:1px solid var(--border);
-  /* Only animate transform — no layout properties */
-  transition:transform .3s cubic-bezier(.4,0,.2,1),box-shadow .3s ease;
+  transition:transform .3s cubic-bezier(.4,0,.2,1),box-shadow .3s ease,padding .3s ease;
   will-change:transform;
+  overflow:hidden;
 }
-.header.header-hidden{
-  transform:translateY(-110%);
+/* Collapsed state — just a slim strip showing logo + expand arrow */
+.header.header-collapsed{
+  padding:.28rem 1rem;
+  box-shadow:var(--shadow);
+}
+.header.header-collapsed .header-collapsible{
+  max-height:0;overflow:hidden;opacity:0;
+  transition:max-height .3s ease,opacity .2s ease;
   pointer-events:none;
-  box-shadow:none;
+  margin:0;padding:0;
 }
-.header:not(.header-hidden){box-shadow:var(--shadow-md);}
+.header-collapsible{
+  max-height:300px;opacity:1;
+  transition:max-height .35s cubic-bezier(.4,0,.2,1),opacity .25s ease;
+  overflow:hidden;
+}
+/* Action buttons that collapse — wrap in a div, not a span */
+.header-actions-collapsible{
+  display:flex;align-items:center;gap:.3rem;
+}
+.header:not(.header-collapsed){box-shadow:var(--shadow-md);}
 
-/* Spacer that matches header height so fixed header doesn't overlap content */
+/* Arrow toggle button — lives inside the header actions */
+#btn-header-arrow{
+  width:2.1rem;height:2.1rem;border-radius:50%;
+  border:1.5px solid var(--border);background:var(--card-bg);
+  color:var(--text-main);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:.78rem;flex-shrink:0;
+  transition:background var(--transition),border-color var(--transition),transform .3s cubic-bezier(.4,0,.2,1);
+}
+#btn-header-arrow:hover{background:var(--accent-soft);border-color:var(--accent);}
+#btn-header-arrow.collapsed{transform:rotate(180deg);}
+
+/* Spacer that matches header height so content doesn't hide behind header */
 #header-spacer{
   height:var(--hdr-h, 0px);
   transition:height .3s cubic-bezier(.4,0,.2,1);
   flex-shrink:0;
 }
 
-#header-show-tab{
-  position:fixed;top:0;left:50%;transform:translateX(-50%);
-  background:var(--accent);color:#fff;
-  padding:6px 20px 6px;border-radius:0 0 14px 14px;
-  font-size:.72rem;font-weight:800;z-index:901;cursor:pointer;
-  display:none;box-shadow:var(--shadow-md);letter-spacing:.04em;
-  transition:opacity .2s;
-}
-#header-show-tab:hover{opacity:.9;}
+/* Remove the old show-tab — no longer needed */
+#header-show-tab{display:none!important;}
 
 .header-inner{max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:.6rem;}
 
@@ -1257,7 +1275,7 @@ html.dark select option{
   <div class="header-inner">
     <div class="header-top">
       <div class="logo" onclick="showV('dash')" role="button" tabindex="0" aria-label="Go to dashboard">HSC<span>VB</span></div>
-      <nav class="desktop-nav" aria-label="Main navigation">
+      <nav class="desktop-nav header-collapsible" aria-label="Main navigation">
         <button class="d-nav-item" onclick="showV('dash')">📊 Dash</button>
         <button class="d-nav-item active" onclick="showV('browse')">📚 Browse</button>
         <button class="d-nav-item" onclick="showV('flash')">🃏 Flash</button>
@@ -1267,26 +1285,30 @@ html.dark select option{
         <button class="d-nav-item" onclick="showV('saved')">⭐ Library</button>
       </nav>
       <div class="header-actions">
-        <button class="action-btn" id="btn-full" title="Fullscreen" aria-label="Toggle fullscreen">⛶</button>
-        <button class="action-btn" id="btn-blind" title="Blind Mode" aria-label="Toggle blind mode" aria-pressed="false">👁️</button>
-        <button class="action-btn" id="theme-toggle" title="Toggle theme" aria-label="Toggle dark mode">🌙</button>
-        <button class="action-btn" id="btn-header-hide" title="Hide header" aria-label="Hide header">🔼</button>
-        <button class="action-btn" id="nav-toggle" title="Open menu" aria-label="Open navigation menu" aria-expanded="false">☰</button>
+        <div class="header-collapsible header-actions-collapsible">
+          <button class="action-btn" id="btn-full" title="Fullscreen" aria-label="Toggle fullscreen">⛶</button>
+          <button class="action-btn" id="btn-blind" title="Blind Mode" aria-label="Toggle blind mode" aria-pressed="false">👁️</button>
+          <button class="action-btn" id="theme-toggle" title="Toggle theme" aria-label="Toggle dark mode">🌙</button>
+          <button class="action-btn" id="nav-toggle" title="Open menu" aria-label="Open navigation menu" aria-expanded="false">☰</button>
+        </div>
+        <button id="btn-header-arrow" title="Collapse/expand header" aria-label="Toggle header" aria-expanded="true">▲</button>
       </div>
     </div>
-    <div class="stats-row" role="group" aria-label="Progress filters">
-      <div class="stat-chip total" id="st-all" role="button" tabindex="0" aria-label="Show all words">
-        <span class="chip-label">Total</span><span class="chip-val" id="c-all">0</span>
+    <div class="header-collapsible">
+      <div class="stats-row" role="group" aria-label="Progress filters">
+        <div class="stat-chip total" id="st-all" role="button" tabindex="0" aria-label="Show all words">
+          <span class="chip-label">Total</span><span class="chip-val" id="c-all">0</span>
+        </div>
+        <div class="stat-chip m" id="st-m" role="button" tabindex="0" aria-label="Show mastered words">
+          <span class="chip-label">Mastered</span><span class="chip-val" id="c-m">0</span>
+        </div>
+        <div class="stat-chip r" id="st-r" role="button" tabindex="0" aria-label="Show review words">
+          <span class="chip-label">Review</span><span class="chip-val" id="c-r">0</span>
+        </div>
       </div>
-      <div class="stat-chip m" id="st-m" role="button" tabindex="0" aria-label="Show mastered words">
-        <span class="chip-label">Mastered</span><span class="chip-val" id="c-m">0</span>
+      <div class="progress-track" role="progressbar" aria-label="Overall progress">
+        <div id="overall-progress-fill"></div>
       </div>
-      <div class="stat-chip r" id="st-r" role="button" tabindex="0" aria-label="Show review words">
-        <span class="chip-label">Review</span><span class="chip-val" id="c-r">0</span>
-      </div>
-    </div>
-    <div class="progress-track" role="progressbar" aria-label="Overall progress">
-      <div id="overall-progress-fill"></div>
     </div>
   </div>
 </header>
@@ -1734,63 +1756,37 @@ document.getElementById('mm-offline-btn').onclick = function(){
 })();
 
 
-/* ══ HEADER SCROLL HIDE ═════════════════════════════════════════ */
-let lastScrollY = 0, headerManHide = false, scrollTicking = false;
-let _headerHidden = false;
-
-// Measure once at load and on resize; never measure mid-scroll
+/* ══ HEADER SPACER MEASUREMENT ══════════════════════════════════ */
 function measureHeader(){
   const h = document.getElementById('main-header');
   if(!h) return;
-  const hh = h.offsetHeight;
-  document.documentElement.style.setProperty('--hdr-h', hh + 'px');
+  document.documentElement.style.setProperty('--hdr-h', h.offsetHeight + 'px');
 }
 window.addEventListener('load', measureHeader);
 window.addEventListener('resize', measureHeader, {passive:true});
 
-window.addEventListener('scroll', () => {
-  if(headerManHide || scrollTicking) return;
-  scrollTicking = true;
-  requestAnimationFrame(() => {
-    const sy = window.scrollY;
-    const delta = sy - lastScrollY;
-    const h = document.getElementById('main-header');
+/* ══ HEADER COLLAPSE ARROW ══════════════════════════════════════ */
+let _headerCollapsed = false;
 
-    // Hysteresis: need >6px movement to trigger, different thresholds for show/hide
-    if(!_headerHidden && delta > 6 && sy > 120){
-      _headerHidden = true;
-      h.classList.add('header-hidden');
-    } else if(_headerHidden && (delta < -6 || sy < 60)){
-      _headerHidden = false;
-      h.classList.remove('header-hidden');
-    }
-
-    lastScrollY = sy;
-    scrollTicking = false;
-  });
-}, {passive:true});
-
-function toggleHeaderManual(hide){
+function toggleHeaderCollapse(){
   triggerHaptic();
-  const h = document.getElementById('main-header');
-  const tab = document.getElementById('header-show-tab');
-  headerManHide = hide;
-  _headerHidden = hide;
-  if(hide){
-    h.classList.add('header-hidden');
-    tab.style.display = 'block';
-    // Collapse the spacer so content fills up
-    document.documentElement.style.setProperty('--hdr-h', '0px');
-  } else {
-    h.classList.remove('header-hidden');
-    tab.style.display = 'none';
-    measureHeader();
-  }
+  _headerCollapsed = !_headerCollapsed;
+  const h   = document.getElementById('main-header');
+  const btn = document.getElementById('btn-header-arrow');
+  h.classList.toggle('header-collapsed', _headerCollapsed);
+  btn.classList.toggle('collapsed', _headerCollapsed);
+  btn.textContent    = _headerCollapsed ? '▼' : '▲';
+  btn.setAttribute('aria-expanded', String(!_headerCollapsed));
+  // Let the CSS transition finish then re-measure height for spacer
+  setTimeout(measureHeader, 350);
 }
-document.getElementById('btn-header-hide').onclick = () => toggleHeaderManual(true);
-document.getElementById('header-show-tab').addEventListener('keydown', e => {
-  if(e.key === 'Enter' || e.key === ' ') toggleHeaderManual(false);
-});
+
+document.getElementById('btn-header-arrow').onclick = toggleHeaderCollapse;
+
+// Keep old header show-tab functional just in case (it's hidden via CSS but may fire)
+function toggleHeaderManual(hide){
+  if(hide !== _headerCollapsed) toggleHeaderCollapse();
+}
 document.querySelector('.logo').addEventListener('keydown', e => {
   if(e.key === 'Enter') showV('dash');
 });
@@ -2615,7 +2611,6 @@ function renderSpell(){
       <span style="font-size:.8rem;font-weight:700;color:var(--wrong)">❌ ${spellNo}</span>
     </div>
     <div class="spell-clue">${v.bn}</div>
-    ${v.pron  ? `<div class="spell-pron">/${v.pron}/</div>` : ''}
     <div class="letter-boxes" aria-label="Letter boxes">${boxes}</div>
     <input class="spell-input" id="spell-inp" type="text"
       autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
